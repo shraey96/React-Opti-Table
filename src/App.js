@@ -8,7 +8,7 @@ function App() {
   const [isLoading, toggleIsLoading] = useState(false)
   const [dataRows, setDataRows] = useState([])
 
-  const currentPage = useRef(0)
+  const currentPage = useRef(1)
 
   const getRowPayload = (rows) => {
     return rows.map((row) => ({
@@ -35,7 +35,7 @@ function App() {
   }
 
   useEffect(() => {
-    fetchRowsData()
+    fetchRowsData(currentPage.current)
   }, [])
 
   return (
@@ -62,7 +62,10 @@ function App() {
           currentPage.current = currentPage.current + 1
           fetchRowsData(currentPage.current, searchVal)
         }}
-        onRowClick={(row) => console.log(row)}
+        withSelect
+        onRowClick={(row) => console.log(`rowClicked: `, row)}
+        onRowSelect={(row, list) => console.log(`rowSelected: `, row, list)}
+        onAllSelect={(allSelected) => console.log(`allSelected: `, allSelected)}
       />
     </div>
   )

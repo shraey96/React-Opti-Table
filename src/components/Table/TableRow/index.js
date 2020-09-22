@@ -3,7 +3,7 @@ import React from "react"
 export const TableRow = (props) => {
   const { startRowIndex, data, config, isSelected, onClick, onSelect } = props
 
-  const { rowHeight, columns, index } = config
+  const { rowHeight, columns, index, withSelect } = config
 
   return (
     <tr
@@ -16,19 +16,21 @@ export const TableRow = (props) => {
         top: `${(startRowIndex + index) * rowHeight}px`,
       }}
     >
-      <td className="table-row__item">
-        <input
-          type="checkbox"
-          className="checkbox"
-          checked={isSelected}
-          onClick={(e) => {
-            e.stopPropagation()
-          }}
-          onChange={(e) => {
-            onSelect && onSelect(e.target.checked)
-          }}
-        />
-      </td>
+      {withSelect && (
+        <td className="table-row__item">
+          <input
+            type="checkbox"
+            className="checkbox"
+            checked={isSelected}
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+            onChange={(e) => {
+              onSelect && onSelect(e.target.checked)
+            }}
+          />
+        </td>
+      )}
 
       {columns.map((c) => {
         const style = {}

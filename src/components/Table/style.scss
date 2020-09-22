@@ -5,26 +5,27 @@
     0 1px 5px 0 rgba(0, 0, 0, 0.12);
 
   &__wrapper {
+    .table-head {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      box-shadow: 6px 9px 5px 0px rgba(0, 0, 0, 0.1);
+      margin-bottom: 4px;
+      .table-head__item {
+        text-align: left;
+        &--right {
+          text-align: right;
+        }
+        &--checkbox {
+          width: 60px;
+        }
+      }
+    }
+
     table {
       display: block;
       overflow: scroll;
       position: relative;
-      thead {
-        display: block;
-        .table-head {
-          display: flex;
-          align-items: center;
-          .table-head__item {
-            text-align: left;
-            &--right {
-              text-align: right;
-            }
-            &--checkbox {
-              width: 60px;
-            }
-          }
-        }
-      }
 
       .data-table-body {
         .table-row {

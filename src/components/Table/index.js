@@ -29,6 +29,7 @@ export class Table extends Component {
     super(props)
     this.state = {
       viewableRows: props.rows.slice(0, props.visibleRows * 2),
+
       startRowIndex: 0,
       selectedItems: {},
     }
@@ -36,6 +37,7 @@ export class Table extends Component {
     this.tableRef = createRef()
     this.tableBodyRef = createRef()
     this.lastDownScrollPos = 0
+    this.isAllSelected = false
   }
 
   componentDidMount() {
@@ -76,7 +78,25 @@ export class Table extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.rows.length !== this.props.rows.length) {
       this.manageScrollRowUpdate(this.tableRef.current.scrollTop)
+
+      if (this.isAllSelected) {
+        this.selectAllRows(
+          this.props.rows.slice(prevProps.rows.length, this.props.rows.length)
+        )
+      }
     }
+  }
+
+  selectAllRows = (rows) => {
+    const { startRowIndex } = this.state
+
+    const allSelected = rows.reduce((a, c, i) => {
+      a[c.id] = `selected_${startRowIndex + i}`
+      return a
+    }, {})
+    this.setState({
+      selectedItems: { ...this.state.selectedItems, ...allSelected },
+    })
   }
 
   manageScrollRowUpdate = (scrollOffset) => {
@@ -112,20 +132,25 @@ export class Table extends Component {
 
   render() {
     const {
+      className = "",
       rows,
       columns,
-      onSearch,
       visibleRows,
+      withSelect,
       rowHeight,
+      onSearch,
       onRowClick,
+      onRowSelect,
+      onAllSelect,
     } = this.props
 
     const { viewableRows, startRowIndex, selectedItems } = this.state
 
-    console.log(22, this.state)
+    console.log(22, this.state, this.isAllSelected)
+    // console.log(2, 111, rows, this.props.rows)
 
     return (
-      <div className="table-container">
+      <div className={`table-container ${className}`}>
         {onSearch && (
           <div className="table-container__search">
             <input
@@ -137,6 +162,27 @@ export class Table extends Component {
         )}
 
         <div className="table-container__wrapper">
+          <TableHead
+            columns={columns}
+            withSelect={withSelect}
+            areAllSelected={
+              Object.keys(selectedItems).length === rows.length || false
+            }
+            onSelectAll={(c) => {
+              if (c) {
+                this.isAllSelected = true
+                this.selectAllRows(rows)
+                onAllSelect && onAllSelect(true)
+              } else {
+                this.isAllSelected = false
+                this.setState(
+                  { selectedItems: {} },
+                  () => onAllSelect && onAllSelect(false)
+                )
+              }
+            }}
+          />
+
           <table
             ref={this.tableRef}
             cellPadding="0"
@@ -145,37 +191,15 @@ export class Table extends Component {
               height: `${visibleRows * rowHeight}px`,
             }}
           >
-            <thead>
-              <TableHead
-                columns={columns}
-                areAllSelected={
-                  Object.keys(selectedItems).length === rows.length
-                }
-                onSelectAll={(c) => {
-                  if (c) {
-                    const allSelected = rows.reduce((a, c, i) => {
-                      return (a[c.id] = i)
-                    }, {})
-
-                    console.log(allSelected)
-                  } else {
-                    this.setState({ selectedItems: {} })
-                  }
-                }}
-              />
-            </thead>
             <tbody ref={this.tableBodyRef} className="data-table-body">
               {viewableRows.map((r, i) => {
                 return (
                   <TableRow
                     key={r.id}
                     data={r}
-                    isSelected={
-                      selectedItems[r.id] &&
-                      typeof selectedItems[r.id] !== "undefined"
-                    }
+                    isSelected={selectedItems[r.id] || false}
                     startRowIndex={startRowIndex}
-                    config={{ columns, rowHeight, index: i }}
+                    config={{ columns, rowHeight, index: i, withSelect }}
                     onClick={() =>
                       onRowClick &&
                       onRowClick({ row: r, index: startRowIndex + i })
@@ -184,12 +208,21 @@ export class Table extends Component {
                       const selectedClone = { ...selectedItems }
                       if (!c) {
                         delete selectedClone[r.id]
+                        this.isAllSelected = false
                       } else {
-                        selectedClone[r.id] = i
+                        selectedClone[r.id] = `selected_${startRowIndex + i}`
                       }
-                      this.setState({
-                        selectedItems: selectedClone,
-                      })
+                      this.setState(
+                        {
+                          selectedItems: selectedClone,
+                        },
+                        () =>
+                          onRowSelect &&
+                          onRowSelect(
+                            { row: r, index: startRowIndex + i },
+                            selectedItems
+                          )
+                      )
                     }}
                   />
                 )
