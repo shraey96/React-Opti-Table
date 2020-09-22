@@ -33,7 +33,8 @@ export const TableRow = (props) => {
           }}
         />
       </td>
-      {/* <td className="table-row-item">{data}</td> */}
+      <td className="table-row-item">{data.thumbnail}</td>
+      <td className="table-row-item">{data.title}</td>
     </tr>
   )
 }

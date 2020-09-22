@@ -39,6 +39,19 @@ function App() {
   return (
     <div className="App">
       <Table
+        columns={[
+          {
+            id: "thumbnail",
+            label: "Thumbnail",
+            rightAlign: false,
+            width: "250px",
+          },
+          {
+            id: "title",
+            label: "Title",
+            rightAlign: false,
+          },
+        ]}
         rows={dataRows}
         visibleRows={4}
         rowHeight={200}

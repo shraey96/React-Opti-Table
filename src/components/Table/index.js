@@ -111,7 +111,14 @@ export class Table extends Component {
   }
 
   render() {
-    const { rows, onSearch, visibleRows, rowHeight, onRowClick } = this.props
+    const {
+      rows,
+      columns,
+      onSearch,
+      visibleRows,
+      rowHeight,
+      onRowClick,
+    } = this.props
 
     const { viewableRows, startRowIndex = 0, selectedItems } = this.state
 
@@ -139,21 +146,26 @@ export class Table extends Component {
               height: `${visibleRows * rowHeight}px`,
             }}
           >
-            <TableHead
-              areAllSelected={Object.keys(selectedItems).length === rows.length}
-              onSelectAll={(c) => {
-                console.log(c)
-                if (c) {
-                  const allSelected = rows.reduce((a, c, i) => {
-                    return (a[c.id] = i)
-                  }, {})
-
-                  console.log(allSelected)
-                } else {
-                  this.setState({ selectedItems: {} })
+            <thead>
+              <TableHead
+                columns={columns}
+                areAllSelected={
+                  Object.keys(selectedItems).length === rows.length
                 }
-              }}
-            />
+                onSelectAll={(c) => {
+                  console.log(c)
+                  if (c) {
+                    const allSelected = rows.reduce((a, c, i) => {
+                      return (a[c.id] = i)
+                    }, {})
+
+                    console.log(allSelected)
+                  } else {
+                    this.setState({ selectedItems: {} })
+                  }
+                }}
+              />
+            </thead>
             <tbody ref={this.tableBodyRef} className="data-table-body">
               {viewableRows.map((r, i) => {
                 return (

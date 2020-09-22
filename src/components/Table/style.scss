@@ -9,6 +9,25 @@
       display: block;
       overflow: scroll;
       position: relative;
+      thead {
+        display: block;
+        .table-head {
+          display: flex;
+          align-items: center;
+          .table-head__item {
+            &--right {
+              text-align: right;
+            }
+            &--left {
+              text-align: left;
+            }
+            &--checkbox {
+              width: 60px;
+            }
+          }
+        }
+      }
+
       .data-table-body {
         .table-row {
           position: absolute;
@@ -16,7 +35,10 @@
           align-items: center;
           justify-content: flex-start;
           padding: 20px;
-          width: calc(100% - 40px);
+          width: 100%;
+          &:first-child {
+            border-top: 1px solid;
+          }
           &:not(:last-child) {
             border-bottom: 1px solid;
           }
