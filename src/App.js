@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 
 import { Table } from "components/Table"
 
@@ -7,6 +7,8 @@ import { getRows } from "utils/helpers"
 function App() {
   const [isLoading, toggleIsLoading] = useState(false)
   const [dataRows, setDataRows] = useState([])
+
+  const currentPage = useRef(0)
 
   const getRowPayload = (rows) => {
     return rows.map((row) => ({
@@ -19,7 +21,7 @@ function App() {
         />
       ),
       title: <span className="demo-title">{row.title}</span>,
-      url: row.url,
+      link: row.url,
     }))
   }
 
@@ -55,7 +57,12 @@ function App() {
         rows={dataRows}
         visibleRows={4}
         rowHeight={200}
-        onFetchMore={(page, searchVal) => fetchRowsData(page, searchVal)}
+        isLoading={isLoading}
+        onFetchMore={(searchVal) => {
+          currentPage.current = currentPage.current + 1
+          fetchRowsData(currentPage.current, searchVal)
+        }}
+        onRowClick={(row) => console.log(row)}
       />
     </div>
   )

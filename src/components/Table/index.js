@@ -3,7 +3,7 @@ import React, { Component, createRef } from "react"
 import { TableRow } from "./TableRow"
 import { TableHead } from "./TableHead"
 
-import { areObjectEqual } from "utils/helpers"
+import { areObjectEqual, debounceFn } from "utils/helpers"
 
 import "./style.scss"
 
@@ -28,13 +28,14 @@ export class Table extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      viewableRows: BIG_LIST.slice(0, props.visibleRows * 2),
+      viewableRows: props.rows.slice(0, props.visibleRows * 2),
       startRowIndex: 0,
       selectedItems: {},
     }
-    this.page = 0
+
     this.tableRef = createRef()
     this.tableBodyRef = createRef()
+    this.lastDownScrollPos = 0
   }
 
   componentDidMount() {
@@ -42,24 +43,29 @@ export class Table extends Component {
 
     if (onFetchMore) {
       const tableEle = this.tableRef.current
-      const tableBodyEle = this.tableBodyRef.current
-      tableEle.addEventListener("scroll", (e) => {
-        // Compute client height on scroll for dynamic height
-        const tableScrollTop = tableEle.scrollTop
-        const tableOffsetHeight = tableEle.clientHeight
-        const tableBodyScrollHeight = tableBodyEle.scrollHeight
-        // debounce(this._handleRowVisibility.bind(this), 200)(tableScrollTop)
-        this.manageScrollRowUpdate(tableScrollTop)
-        if (!isLoading) {
-          if (tableBodyScrollHeight - tableOffsetHeight <= tableScrollTop) {
-            this.page = this.page + 1
-            onFetchMore(this.page)
-            // .then(() =>
-            //   this.manageScrollRowUpdate(tableScrollTop)
-            // )
+
+      tableEle.addEventListener(
+        "scroll",
+        debounceFn((e) => {
+          const tableScrollTop = tableEle.scrollTop
+          const tableOffsetHeight = tableEle.clientHeight
+
+          let IS_SCROLLING_DOWN = false
+          if (tableScrollTop > this.lastDownScrollPos) {
+            IS_SCROLLING_DOWN = true
+            this.lastDownScrollPos = tableScrollTop
+          } else {
+            IS_SCROLLING_DOWN = false
           }
-        }
-      })
+
+          this.manageScrollRowUpdate(tableScrollTop)
+          if (IS_SCROLLING_DOWN && !isLoading) {
+            if ((tableScrollTop / tableOffsetHeight) * 100 > 70) {
+              onFetchMore()
+            }
+          }
+        }, 150)
+      )
     }
   }
 
@@ -69,18 +75,12 @@ export class Table extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.rows.length !== this.props.rows.length) {
-      // this.setState({
-      //   viewableRows: this.props.rows.slice(0, this.props.visibleRows * 2),
-      // })
-      // this.manageScrollRowUpdate(this.tableRef.current.scrollHeight)
+      this.manageScrollRowUpdate(this.tableRef.current.scrollTop)
     }
   }
 
   manageScrollRowUpdate = (scrollOffset) => {
-    // const rows = BIG_LIST
     const { rowHeight, visibleRows, rows } = this.props
-    // console.log(111, `manageScrollRowUpdate==> `, rows)
-    // const {  } = this.state
 
     const currentVisibleRowIndex = Math.floor(scrollOffset / rowHeight)
 
@@ -120,10 +120,9 @@ export class Table extends Component {
       onRowClick,
     } = this.props
 
-    const { viewableRows, startRowIndex = 0, selectedItems } = this.state
+    const { viewableRows, startRowIndex, selectedItems } = this.state
 
     console.log(22, this.state)
-    // console.log(33, this.props)
 
     return (
       <div className="table-container">
@@ -153,7 +152,6 @@ export class Table extends Component {
                   Object.keys(selectedItems).length === rows.length
                 }
                 onSelectAll={(c) => {
-                  console.log(c)
                   if (c) {
                     const allSelected = rows.reduce((a, c, i) => {
                       return (a[c.id] = i)
@@ -171,15 +169,17 @@ export class Table extends Component {
                 return (
                   <TableRow
                     key={r.id}
-                    index={i}
                     data={r}
                     isSelected={
                       selectedItems[r.id] &&
                       typeof selectedItems[r.id] !== "undefined"
                     }
                     startRowIndex={startRowIndex}
-                    rowHeight={rowHeight}
-                    onClick={() => onRowClick && onRowClick()}
+                    config={{ columns, rowHeight, index: i }}
+                    onClick={() =>
+                      onRowClick &&
+                      onRowClick({ row: r, index: startRowIndex + i })
+                    }
                     onSelect={(c) => {
                       const selectedClone = { ...selectedItems }
                       if (!c) {
@@ -187,7 +187,6 @@ export class Table extends Component {
                       } else {
                         selectedClone[r.id] = i
                       }
-
                       this.setState({
                         selectedItems: selectedClone,
                       })

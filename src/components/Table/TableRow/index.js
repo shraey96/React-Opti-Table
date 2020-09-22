@@ -1,26 +1,22 @@
 import React from "react"
 
 export const TableRow = (props) => {
-  const {
-    rowHeight,
-    startRowIndex,
-    data,
-    index,
-    isSelected,
-    onClick,
-    onSelect,
-  } = props
+  const { startRowIndex, data, config, isSelected, onClick, onSelect } = props
+
+  const { rowHeight, columns, index } = config
+
   return (
     <tr
       key={data.id}
       className="table-row"
+      id={`table-row-${data.id}`}
       onClick={(_) => onClick && onClick()}
       style={{
         height: `${rowHeight}px`,
         top: `${(startRowIndex + index) * rowHeight}px`,
       }}
     >
-      <td className="table-row-item">
+      <td className="table-row__item">
         <input
           type="checkbox"
           className="checkbox"
@@ -33,8 +29,26 @@ export const TableRow = (props) => {
           }}
         />
       </td>
-      <td className="table-row-item">{data.thumbnail}</td>
-      <td className="table-row-item">{data.title}</td>
+
+      {columns.map((c) => {
+        const style = {}
+        if (c.width) {
+          style.width = c.width
+        } else {
+          style.flex = 1
+        }
+
+        return (
+          <td
+            className={`table-row__item ${
+              c.rightAlign && "table-row__item--right"
+            }`}
+            style={style}
+          >
+            {data[c.id] || "-"}
+          </td>
+        )
+      })}
     </tr>
   )
 }

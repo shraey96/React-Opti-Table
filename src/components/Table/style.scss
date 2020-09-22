@@ -15,11 +15,9 @@
           display: flex;
           align-items: center;
           .table-head__item {
+            text-align: left;
             &--right {
               text-align: right;
-            }
-            &--left {
-              text-align: left;
             }
             &--checkbox {
               width: 60px;
@@ -41,6 +39,12 @@
           }
           &:not(:last-child) {
             border-bottom: 1px solid;
+          }
+          &__item {
+            text-align: left;
+            &--right {
+              text-align: right;
+            }
           }
         }
       }
