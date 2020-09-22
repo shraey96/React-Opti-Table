@@ -1,28 +1,13 @@
 import React, { Component, createRef } from "react"
 
+import PropTypes from "prop-types"
+
 import { TableRow } from "./TableRow"
 import { TableHead } from "./TableHead"
 
-import { areObjectEqual, debounceFn } from "utils/helpers"
+import { debounceFn, nonNegativeNumber, rowsValidator } from "utils/helpers"
 
 import "./style.scss"
-
-const BIG_LIST = new Array(1000)
-  .fill()
-  .map((x, y) => ({
-    id: y,
-    thumbnailUrl: "https://via.placeholder.com/150/771796",
-    title: "reprehenderit est deserunt velit ipsam" + y,
-    url: "https://via.placeholder.com/600/771796",
-  }))
-  .map((row) => ({
-    id: `album_${row.id}`,
-    thumbnail: (
-      <img className="demo-thumbnail" src={row.thumbnailUrl} alt={row.title} />
-    ),
-    title: <span className="demo-title">{row.title}</span>,
-    url: row.url,
-  }))
 
 export class Table extends Component {
   constructor(props) {
@@ -142,12 +127,10 @@ export class Table extends Component {
       onRowClick,
       onRowSelect,
       onAllSelect,
+      searchVal,
     } = this.props
 
     const { viewableRows, startRowIndex, selectedItems } = this.state
-
-    console.log(22, this.state, this.isAllSelected)
-    // console.log(2, 111, rows, this.props.rows)
 
     return (
       <div className={`table-container ${className}`}>
@@ -155,6 +138,7 @@ export class Table extends Component {
           <div className="table-container__search">
             <input
               type="search"
+              value={searchVal}
               onChange={(e) => onSearch(e.target.value)}
               placeholder="Search"
             />
@@ -166,7 +150,9 @@ export class Table extends Component {
             columns={columns}
             withSelect={withSelect}
             areAllSelected={
-              Object.keys(selectedItems).length === rows.length || false
+              (Object.keys(selectedItems).length === rows.length &&
+                rows.length !== 0) ||
+              false
             }
             onSelectAll={(c) => {
               if (c) {
@@ -233,4 +219,28 @@ export class Table extends Component {
       </div>
     )
   }
+}
+
+Table.propTypes = {
+  className: PropTypes.string,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      label: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
+        .isRequired,
+      width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    })
+  ).isRequired,
+
+  rows: PropTypes.arrayOf(rowsValidator).isRequired,
+
+  visibleRows: nonNegativeNumber,
+  rowHeight: nonNegativeNumber,
+  withSelect: PropTypes.bool,
+  isLoading: PropTypes.bool,
+  onSearch: PropTypes.func,
+  onRowClick: PropTypes.func,
+  onRowSelect: PropTypes.func,
+  onAllSelect: PropTypes.func,
+  onFetchMore: PropTypes.func,
 }

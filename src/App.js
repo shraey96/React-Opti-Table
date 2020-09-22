@@ -2,28 +2,16 @@ import React, { useState, useEffect, useRef } from "react"
 
 import { Table } from "components/Table"
 
-import { getRows } from "utils/helpers"
+import { debounceFn, getRows, getRowPayload } from "utils/helpers"
+
+import "./base.scss"
 
 function App() {
   const [isLoading, toggleIsLoading] = useState(false)
   const [dataRows, setDataRows] = useState([])
+  const [searchVal, setSearchVal] = useState("")
 
   const currentPage = useRef(1)
-
-  const getRowPayload = (rows) => {
-    return rows.map((row) => ({
-      id: `album_${row.id}`,
-      thumbnail: (
-        <img
-          className="demo-thumbnail"
-          src={row.thumbnailUrl}
-          alt={row.title}
-        />
-      ),
-      title: <span className="demo-title">{row.title}</span>,
-      link: row.url,
-    }))
-  }
 
   const fetchRowsData = (page, searchVal) => {
     toggleIsLoading(true)
@@ -35,11 +23,20 @@ function App() {
   }
 
   useEffect(() => {
-    fetchRowsData(currentPage.current)
+    fetchRowsData(currentPage.current, searchVal)
   }, [])
+
+  const debouncedSearch = useRef(debounceFn(fetchRowsData, 1000))
+
+  useEffect(() => {
+    debouncedSearch.current(currentPage.current, searchVal)
+  }, [searchVal])
+
+  console.log(dataRows)
 
   return (
     <div className="App">
+      {isLoading && <div className="loader" />}
       <Table
         columns={[
           {
@@ -58,11 +55,12 @@ function App() {
         visibleRows={4}
         rowHeight={200}
         isLoading={isLoading}
-        onFetchMore={(searchVal) => {
+        withSelect
+        onFetchMore={() => {
           currentPage.current = currentPage.current + 1
           fetchRowsData(currentPage.current, searchVal)
         }}
-        withSelect
+        onSearch={(val) => setSearchVal(val)}
         onRowClick={(row) => console.log(`rowClicked: `, row)}
         onRowSelect={(row, list) => console.log(`rowSelected: `, row, list)}
         onAllSelect={(allSelected) => console.log(`allSelected: `, allSelected)}

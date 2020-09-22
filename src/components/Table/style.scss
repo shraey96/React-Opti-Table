@@ -8,11 +8,11 @@
     .table-head {
       display: flex;
       align-items: center;
-      padding: 20px;
       box-shadow: 6px 9px 5px 0px rgba(0, 0, 0, 0.1);
       margin-bottom: 4px;
       .table-head__item {
         text-align: left;
+        padding: 20px;
         &--right {
           text-align: right;
         }
@@ -26,14 +26,12 @@
       display: block;
       overflow: scroll;
       position: relative;
-
       .data-table-body {
         .table-row {
           position: absolute;
           display: flex;
           align-items: center;
           justify-content: flex-start;
-          padding: 20px;
           width: 100%;
           &:first-child {
             border-top: 1px solid;
@@ -43,6 +41,7 @@
           }
           &__item {
             text-align: left;
+            padding: 20px;
             &--right {
               text-align: right;
             }

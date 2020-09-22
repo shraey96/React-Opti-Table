@@ -1,4 +1,5 @@
 import React from "react"
+import PropTypes from "prop-types"
 
 export const TableHead = (props) => {
   const { columns, withSelect, areAllSelected, onSelectAll } = props
@@ -38,4 +39,18 @@ export const TableHead = (props) => {
       })}
     </div>
   )
+}
+
+TableHead.propTypes = {
+  withSelect: PropTypes.bool,
+  areAllSelected: PropTypes.bool,
+  onSelectAll: PropTypes.func,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      label: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
+        .isRequired,
+      width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    })
+  ).isRequired,
 }

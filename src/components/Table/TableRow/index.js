@@ -1,7 +1,10 @@
 import React from "react"
+import PropTypes from "prop-types"
+
+import { rowsValidator } from "utils/helpers"
 
 export const TableRow = (props) => {
-  const { startRowIndex, data, config, isSelected, onClick, onSelect } = props
+  const { data, config, startRowIndex, isSelected, onClick, onSelect } = props
 
   const { rowHeight, columns, index, withSelect } = config
 
@@ -32,7 +35,7 @@ export const TableRow = (props) => {
         </td>
       )}
 
-      {columns.map((c) => {
+      {columns.map((c, i) => {
         const style = {}
         if (c.width) {
           style.width = c.width
@@ -42,6 +45,7 @@ export const TableRow = (props) => {
 
         return (
           <td
+            key={i}
             className={`table-row__item ${
               c.rightAlign && "table-row__item--right"
             }`}
@@ -53,4 +57,25 @@ export const TableRow = (props) => {
       })}
     </tr>
   )
+}
+
+TableRow.propTypes = {
+  isSelected: PropTypes.bool,
+  onSelect: PropTypes.func,
+  onClick: PropTypes.func,
+  startRowIndex: PropTypes.number.isRequired,
+
+  data: rowsValidator,
+  config: PropTypes.shape({
+    stickyHeader: PropTypes.bool,
+    rowHeight: PropTypes.number.isRequired,
+    columns: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      })
+    ).isRequired,
+    index: PropTypes.number.isRequired,
+    withSelect: PropTypes.bool.isRequired,
+  }).isRequired,
 }
