@@ -79,6 +79,10 @@ export class Table extends Component {
     }
   }
 
+  /**
+   * Function to select all rows.
+   * @param {Object[]} rows
+   */
   selectAllRows = (rows) => {
     const { startRowIndex } = this.state
 
@@ -91,6 +95,10 @@ export class Table extends Component {
     })
   }
 
+  /**
+   * Function to slice array of mains rows accoridng to rowHeight + visibleRows + scrollPosition.
+   * @param {number} scrollOffset
+   */
   manageScrollRowUpdate = (scrollOffset) => {
     const { rowHeight, visibleRows, rows } = this.props
 
@@ -277,4 +285,19 @@ Table.propTypes = {
 
   /** debounce timer for functions */
   debounceTimer: PropTypes.number,
+}
+
+Table.defaultProps = {
+  /** value in ms */
+  debounceTimer: 150,
+
+  searchPlaceholder: "Search",
+
+  isLoading: false,
+
+  withSelect: false,
+
+  rowHeight: 200,
+
+  visibleRows: 10,
 }

@@ -1,11 +1,20 @@
 import React from "react"
 
+/**
+ * Function to fetch data from api.
+ * @param {number} pageNumber
+ * @param {string} searchTerm
+ */
 export const getRows = (pageNumber = 0, searchTerm = "") => {
   return fetch(
     `https://jsonplaceholder.typicode.com/photos?_page=${pageNumber}&q=${searchTerm}`
   ).then((res) => res.json())
 }
 
+/**
+ * Function to return modified data for ui.
+ * @param {Object[]} rows
+ */
 export const getRowPayload = (rows) => {
   return rows.map((row) => ({
     id: `row__${row.id}`,
@@ -17,6 +26,11 @@ export const getRowPayload = (rows) => {
   }))
 }
 
+/**
+ * Function to debounce given function over a delay.
+ * @param {Function} fn
+ * @param {number} delay
+ */
 export const debounceFn = (fn, delay) => {
   let timeout = null
   return function (...args) {
@@ -29,6 +43,12 @@ export const debounceFn = (fn, delay) => {
 
 // Prop Validators //
 
+/**
+ * Function to check given prop is non negative number.
+ * @param {Object} props
+ * @param {string} propName
+ * @param {string} componentName
+ */
 export const nonNegativeNumber = (props, propName, componentName) => {
   const propVal = props[propName]
   if (isNaN(propVal) || propVal <= 0) {
@@ -37,6 +57,13 @@ export const nonNegativeNumber = (props, propName, componentName) => {
     )
   }
 }
+
+/**
+ * Function to validate props for rows in component.
+ * @param {Object} props
+ * @param {string} propName
+ * @param {string} componentName
+ */
 
 export const rowsValidator = (props, propName, componentName) => {
   const propVal = props[propName]

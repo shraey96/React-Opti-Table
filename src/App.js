@@ -15,6 +15,12 @@ function App() {
 
   const currentPage = useRef(1)
 
+  /**
+   * Function to fetch data from api.
+   * @param {number} page
+   * @param {string} searchVal
+   * @param {boolean} withRest
+   */
   const fetchRowsData = (
     page = currentPage.current,
     searchVal = "",
@@ -34,12 +40,16 @@ function App() {
   const debouncedSearch = useRef(debounceFn(fetchRowsData, 1000))
 
   useEffect(() => {
-    if (!isFirstLoad)
+    if (!isFirstLoad) {
+      if (searchVal.length === 0) {
+        currentPage.current = 1
+      }
       debouncedSearch.current(currentPage.current, searchVal, true)
+    }
   }, [searchVal])
 
   useEffect(() => {
-    fetchRowsData(currentPage.current, searchVal)
+    fetchRowsData(currentPage.current)
   }, [])
 
   return (

@@ -2,7 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 
 export const TableHead = (props) => {
-  const { columns, withSelect, areAllSelected, onSelectAll } = props
+  const { columns, withSelect = false, areAllSelected, onSelectAll } = props
   return (
     <div className="table-head">
       {withSelect && (
@@ -60,4 +60,8 @@ TableHead.propTypes = {
       width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     })
   ).isRequired,
+}
+
+TableHead.defaultProps = {
+  withSelect: false,
 }
