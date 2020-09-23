@@ -6,6 +6,8 @@ import { debounceFn, getRows, getRowPayload } from "utils/helpers"
 
 import "./base.scss"
 
+let isFirstLoad = true
+
 function App() {
   const [isLoading, toggleIsLoading] = useState(false)
   const [dataRows, setDataRows] = useState([])
@@ -13,26 +15,32 @@ function App() {
 
   const currentPage = useRef(1)
 
-  const fetchRowsData = (page, searchVal) => {
+  const fetchRowsData = (
+    page = currentPage.current,
+    searchVal = "",
+    withRest = false
+  ) => {
     toggleIsLoading(true)
     return getRows(page, searchVal)
       .then((data) => {
-        setDataRows((p) => [...p, ...getRowPayload(data)])
+        setDataRows((p) =>
+          !withRest ? [...p, ...getRowPayload(data)] : getRowPayload(data)
+        )
+        isFirstLoad = false
       })
       .finally(() => toggleIsLoading(false))
   }
 
-  useEffect(() => {
-    fetchRowsData(currentPage.current, searchVal)
-  }, [])
-
   const debouncedSearch = useRef(debounceFn(fetchRowsData, 1000))
 
   useEffect(() => {
-    debouncedSearch.current(currentPage.current, searchVal)
+    if (!isFirstLoad)
+      debouncedSearch.current(currentPage.current, searchVal, true)
   }, [searchVal])
 
-  console.log(dataRows)
+  useEffect(() => {
+    fetchRowsData(currentPage.current, searchVal)
+  }, [])
 
   return (
     <div className="App">
@@ -52,6 +60,8 @@ function App() {
           },
         ]}
         rows={dataRows}
+        searchPlaceholder="Search"
+        debounceTimer={150}
         visibleRows={4}
         rowHeight={200}
         isLoading={isLoading}

@@ -26,7 +26,7 @@ export class Table extends Component {
   }
 
   componentDidMount() {
-    const { onFetchMore, isLoading } = this.props
+    const { onFetchMore, isLoading, debounceTimer = 150 } = this.props
 
     if (onFetchMore) {
       const tableEle = this.tableRef.current
@@ -51,7 +51,7 @@ export class Table extends Component {
               onFetchMore()
             }
           }
-        }, 150)
+        }, debounceTimer)
       )
     }
   }
@@ -61,13 +61,20 @@ export class Table extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.rows.length !== this.props.rows.length) {
+    const { rows } = this.props
+    if (prevProps.rows.length !== rows.length) {
       this.manageScrollRowUpdate(this.tableRef.current.scrollTop)
 
+      if (rows.length === 0) {
+        this.setState({
+          visibleRows: [],
+        })
+
+        return
+      }
+
       if (this.isAllSelected) {
-        this.selectAllRows(
-          this.props.rows.slice(prevProps.rows.length, this.props.rows.length)
-        )
+        this.selectAllRows(rows.slice(prevProps.rows.length, rows.length))
       }
     }
   }
@@ -95,22 +102,16 @@ export class Table extends Component {
 
     const startRowIndex = prevRowIndex > 0 ? prevRowIndex : 0
 
-    // console.log(`scrollOffset ==> `, scrollOffset)
-    // console.log(`currentVisibleRowIndex ==> `, currentVisibleRowIndex)
-    // console.log(`prevRowIndex ==> `, prevRowIndex)
-    // console.log(`nextRowIndex ==> `, nextRowIndex)
-    // console.log(`startRowIndex ==> `, startRowIndex)
-
-    const mutatedComputedRows = []
+    const updatedRows = []
     rows
       .slice(startRowIndex, currentVisibleRowIndex)
-      .forEach((row) => mutatedComputedRows.push(row))
+      .forEach((row) => updatedRows.push(row))
     rows
       .slice(currentVisibleRowIndex, nextRowIndex)
-      .forEach((row) => mutatedComputedRows.push(row))
+      .forEach((row) => updatedRows.push(row))
 
     this.setState({
-      viewableRows: mutatedComputedRows,
+      viewableRows: updatedRows,
       startRowIndex: startRowIndex,
     })
   }
@@ -128,6 +129,8 @@ export class Table extends Component {
       onRowSelect,
       onAllSelect,
       searchVal,
+      searchPlaceholder,
+      isLoading,
     } = this.props
 
     const { viewableRows, startRowIndex, selectedItems } = this.state
@@ -137,10 +140,10 @@ export class Table extends Component {
         {onSearch && (
           <div className="table-container__search">
             <input
-              type="search"
+              type="text"
               value={searchVal}
               onChange={(e) => onSearch(e.target.value)}
-              placeholder="Search"
+              placeholder={searchPlaceholder}
             />
           </div>
         )}
@@ -177,13 +180,17 @@ export class Table extends Component {
               height: `${visibleRows * rowHeight}px`,
             }}
           >
+            {rows.length === 0 && !isLoading && (
+              <p className="empty-items-text">No items found</p>
+            )}
+
             <tbody ref={this.tableBodyRef} className="data-table-body">
               {viewableRows.map((r, i) => {
                 return (
                   <TableRow
                     key={r.id}
                     data={r}
-                    isSelected={selectedItems[r.id] || false}
+                    isSelected={selectedItems[r.id] || r.isSelected || false}
                     startRowIndex={startRowIndex}
                     config={{ columns, rowHeight, index: i, withSelect }}
                     onClick={() =>
@@ -206,7 +213,7 @@ export class Table extends Component {
                           onRowSelect &&
                           onRowSelect(
                             { row: r, index: startRowIndex + i },
-                            selectedItems
+                            this.state.selectedItems
                           )
                       )
                     }}
@@ -222,7 +229,10 @@ export class Table extends Component {
 }
 
 Table.propTypes = {
+  /** additional classnames to add */
   className: PropTypes.string,
+
+  /** array of columns config to add */
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -232,15 +242,39 @@ Table.propTypes = {
     })
   ).isRequired,
 
+  /** array of data rows to display according to viewport */
   rows: PropTypes.arrayOf(rowsValidator).isRequired,
 
+  /** number of visible rows to display */
   visibleRows: nonNegativeNumber,
+
+  /** row height of each row to display */
   rowHeight: nonNegativeNumber,
+
+  /** boolean to enable select/select all  */
   withSelect: PropTypes.bool,
+
+  /** boolean for data loading indication */
   isLoading: PropTypes.bool,
+
+  /** callback function for searchbox onChange */
   onSearch: PropTypes.func,
+
+  /** callback function for row onClick */
   onRowClick: PropTypes.func,
+
+  /** callback function for row select */
   onRowSelect: PropTypes.func,
+
+  /** callback function for all rows select */
   onAllSelect: PropTypes.func,
+
+  /** callback function for loading more data */
   onFetchMore: PropTypes.func,
+
+  /** search placeholder for searchbox */
+  searchPlaceholder: PropTypes.string,
+
+  /** debounce timer for functions */
+  debounceTimer: PropTypes.number,
 }

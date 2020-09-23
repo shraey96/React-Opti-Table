@@ -42,9 +42,16 @@ export const TableHead = (props) => {
 }
 
 TableHead.propTypes = {
+  /** boolean to enable select/select all  */
   withSelect: PropTypes.bool,
+
+  /** boolean for all selected */
   areAllSelected: PropTypes.bool,
+
+  /** callback function for all rows select */
   onSelectAll: PropTypes.func,
+
+  /** array of columns config to add */
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

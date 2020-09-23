@@ -60,14 +60,23 @@ export const TableRow = (props) => {
 }
 
 TableRow.propTypes = {
+  /** boolean to toggle selection of row */
   isSelected: PropTypes.bool,
+
+  /** callback function for row select */
   onSelect: PropTypes.func,
+
+  /** callback function for row onClick */
   onClick: PropTypes.func,
+
+  /** startrow index for rows */
   startRowIndex: PropTypes.number.isRequired,
 
+  /** row object to display */
   data: rowsValidator,
+
+  /** config for column + rowHeight + index + withSelect */
   config: PropTypes.shape({
-    stickyHeader: PropTypes.bool,
     rowHeight: PropTypes.number.isRequired,
     columns: PropTypes.arrayOf(
       PropTypes.shape({
