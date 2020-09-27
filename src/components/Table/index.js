@@ -26,38 +26,20 @@ export class Table extends Component {
   }
 
   componentDidMount() {
-    const { onFetchMore, isLoading, debounceTimer = 150 } = this.props
+    const { onFetchMore, debounceTimer = 150 } = this.props
 
     if (onFetchMore) {
       const tableEle = this.tableRef.current
 
       tableEle.addEventListener(
         "scroll",
-        debounceFn((e) => {
-          const tableScrollTop = tableEle.scrollTop
-          const tableOffsetHeight = tableEle.clientHeight
-
-          let IS_SCROLLING_DOWN = false
-          if (tableScrollTop > this.lastDownScrollPos) {
-            IS_SCROLLING_DOWN = true
-            this.lastDownScrollPos = tableScrollTop
-          } else {
-            IS_SCROLLING_DOWN = false
-          }
-
-          this.manageScrollRowUpdate(tableScrollTop)
-          if (IS_SCROLLING_DOWN && !isLoading) {
-            if ((tableScrollTop / tableOffsetHeight) * 100 > 70) {
-              onFetchMore()
-            }
-          }
-        }, debounceTimer)
+        debounceFn(this.handleTableScroll, debounceTimer)
       )
     }
   }
 
   componentWillUnmount() {
-    this.tableRef.current.removeEventListener("scroll")
+    this.tableRef.current.removeEventListener("scroll", this.handleTableScroll)
   }
 
   componentDidUpdate(prevProps) {
@@ -79,15 +61,37 @@ export class Table extends Component {
     }
   }
 
+  handleTableScroll = (e) => {
+    const { onFetchMore, isLoading } = this.props
+    const tableEle = this.tableRef.current
+    const tableScrollTop = tableEle.scrollTop
+    const tableOffsetHeight = tableEle.clientHeight
+
+    let IS_SCROLLING_DOWN = false
+    if (tableScrollTop > this.lastDownScrollPos) {
+      IS_SCROLLING_DOWN = true
+      this.lastDownScrollPos = tableScrollTop
+    } else {
+      IS_SCROLLING_DOWN = false
+    }
+
+    this.manageScrollRowUpdate(tableScrollTop)
+    if (IS_SCROLLING_DOWN && !isLoading) {
+      if ((tableScrollTop / tableOffsetHeight) * 100 > 70) {
+        onFetchMore()
+      }
+    }
+  }
+
   /**
    * Function to select all rows.
    * @param {Object[]} rows
    */
   selectAllRows = (rows) => {
-    const { startRowIndex } = this.state
+    const rowSpliceDiff = this.props.rows.length - rows.length
 
     const allSelected = rows.reduce((a, c, i) => {
-      a[c.id] = `selected_${startRowIndex + i}`
+      a[c.id] = `selected_${rowSpliceDiff + i}`
       return a
     }, {})
     this.setState({
@@ -193,12 +197,20 @@ export class Table extends Component {
             )}
 
             <tbody ref={this.tableBodyRef} className="data-table-body">
+              {/* {rows.length === 0 && !isLoading && (
+                <tr className="empty-items-text">
+                  <td> No items found </td>
+                </tr>
+              )} */}
+
               {viewableRows.map((r, i) => {
                 return (
                   <TableRow
                     key={r.id}
                     data={r}
-                    isSelected={selectedItems[r.id] || r.isSelected || false}
+                    isSelected={
+                      (selectedItems[r.id] && true) || r.isSelected || false
+                    }
                     startRowIndex={startRowIndex}
                     config={{ columns, rowHeight, index: i, withSelect }}
                     onClick={() =>
